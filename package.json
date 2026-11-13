@@ -1,0 +1,17 @@
+{
+  "name": "boadcleaner-yara-rules",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Weekly YARA rule bundle for BoadAIcleaner, filtered from YARA Forge to permissively licensed sources",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@litko/yara-x": "0.11.0"
+  }
+}

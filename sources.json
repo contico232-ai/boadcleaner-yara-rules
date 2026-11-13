@@ -1,0 +1,68 @@
+{
+  "maxFileChars": 900000,
+  "sources": [
+    {
+      "name": "ReversingLabs",
+      "package": "extended",
+      "license": "MIT",
+      "repository": "https://github.com/reversinglabs/reversinglabs-yara-rules",
+      "file": "reversinglabs"
+    },
+    {
+      "name": "DitekSHen",
+      "package": "core",
+      "license": "BSD-2-Clause",
+      "repository": "https://github.com/ditekshen/detection",
+      "file": "ditekshen"
+    },
+    {
+      "name": "FireEye-RT",
+      "package": "core",
+      "license": "BSD-2-Clause",
+      "repository": "https://github.com/mandiant/red_team_tool_countermeasures",
+      "file": "fireeye-rt"
+    },
+    {
+      "name": "Volexity",
+      "package": "core",
+      "license": "BSD-2-Clause",
+      "repository": "https://github.com/volexity/threat-intel",
+      "file": "volexity"
+    },
+    {
+      "name": "GCTI",
+      "package": "core",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/chronicle/GCTI",
+      "file": "gcti"
+    },
+    {
+      "name": "ESET",
+      "package": "core",
+      "license": "BSD-2-Clause",
+      "repository": "https://github.com/eset/malware-ioc",
+      "file": "eset"
+    },
+    {
+      "name": "Trellix ARC",
+      "package": "core",
+      "license": "Apache-2.0",
+      "repository": "https://github.com/advanced-threat-research/Yara-Rules",
+      "file": "trellix-arc"
+    },
+    {
+      "name": "WithSecureLabs",
+      "package": "core",
+      "license": "BSD-2-Clause",
+      "repository": "https://github.com/WithSecureLabs/iocs",
+      "file": "withsecurelabs"
+    },
+    {
+      "name": "Elceef",
+      "package": "core",
+      "license": "MIT",
+      "repository": "https://github.com/elceef/yara-rulz",
+      "file": "elceef"
+    }
+  ]
+}

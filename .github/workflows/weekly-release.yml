@@ -1,0 +1,86 @@
+name: Weekly rules release
+
+# YARA Forge publishes a release about once a week (usually Sunday).
+# Build from its newest release on Monday and publish only when the
+# bundle content changed.
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weekly-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm test
+
+      - name: Download the newest YARA Forge release
+        run: |
+          FORGE_TAG=$(gh release view --repo YARAHQ/yara-forge --json tagName --jq .tagName)
+          if ! [[ "$FORGE_TAG" =~ ^[0-9]{8}$ ]]; then
+            echo "Unexpected YARA Forge tag: $FORGE_TAG" >&2
+            exit 1
+          fi
+          echo "FORGE_TAG=$FORGE_TAG" >> "$GITHUB_ENV"
+          mkdir -p work
+          gh release download "$FORGE_TAG" --repo YARAHQ/yara-forge --dir work \
+            --pattern yara-forge-rules-core.zip --pattern yara-forge-rules-extended.zip
+          unzip -q -o work/yara-forge-rules-core.zip -d work
+          unzip -q -o work/yara-forge-rules-extended.zip -d work
+
+      - name: Build and check the bundle
+        run: |
+          node scripts/build.mjs \
+            --core work/packages/core/yara-rules-core.yar \
+            --extended work/packages/extended/yara-rules-extended.yar \
+            --forge-tag "$FORGE_TAG" \
+            --out dist
+
+      - name: Compare with the latest release
+        id: compare
+        run: |
+          NEW_SHA=$(node -p "require('./dist/manifest.json').sha256")
+          VERSION=$(node -p "require('./dist/manifest.json').version")
+          OLD_SHA=""
+          if gh release download --repo "$GITHUB_REPOSITORY" --pattern manifest.json --dir previous 2>/dev/null; then
+            OLD_SHA=$(node -p "require('./previous/manifest.json').sha256")
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$NEW_SHA" = "$OLD_SHA" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "Bundle unchanged ($VERSION); nothing to publish." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish the release
+        if: steps.compare.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.compare.outputs.version }}
+        run: |
+          gh release create "$VERSION" \
+            dist/rules-bundle.json dist/manifest.json dist/THIRD-PARTY-LICENSES.md \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Rules $VERSION" \
+            --notes-file dist/RELEASE-NOTES.md \
+            --latest
+          cat dist/RELEASE-NOTES.md >> "$GITHUB_STEP_SUMMARY"
